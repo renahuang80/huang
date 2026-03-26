@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>运营活动框架</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: #0a0c10;
+    color: #e0e0e0;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header { text-align: center; padding: 40px 20px 12px; }
+  .header h1 {
+    font-size: 28px; font-weight: 900; letter-spacing: 1px;
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 40%, #8b5cf6 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+  }
+  .header .sub { font-size: 13px; color: #555; margin-bottom: 10px; letter-spacing: 0.5px; }
+  .ctx {
+    font-size: 12px; color: #555; max-width: 720px; margin: 0 auto;
+    line-height: 1.75; background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 14px 18px;
+  }
+  .ctx b { color: #f59e0b; }
+
+  /* ── Legend ── */
+  .legend { display: flex; justify-content: center; gap: 20px; padding: 16px 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #777; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .dot.daily { background: #10b981; }
+  .dot.weekly { background: #3b82f6; }
+  .dot.monthly { background: #a855f7; }
+  .dot.seasonal { background: #f59e0b; }
+  .dot.special { background: #ec4899; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; justify-content: center; gap: 6px; padding: 8px 16px 20px; flex-wrap: wrap; }
+  .tab {
+    padding: 10px 22px; border-radius: 24px;
+    border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+    color: #888; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .3s ease; user-select: none;
+  }
+  .tab:hover { background: rgba(255,255,255,0.07); color: #ccc; transform: translateY(-1px); }
+  .tab.active { color: #fff; border-color: transparent; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .tab[data-id="retention"].active { background: linear-gradient(135deg,#10b981,#059669); }
+  .tab[data-id="active"].active    { background: linear-gradient(135deg,#3b82f6,#1d4ed8); }
+  .tab[data-id="payment"].active   { background: linear-gradient(135deg,#f59e0b,#d97706); }
+  .tab[data-id="consume"].active   { background: linear-gradient(135deg,#ef4444,#dc2626); }
+  .tab[data-id="gameplay"].active  { background: linear-gradient(135deg,#8b5cf6,#6d28d9); }
+  .tab[data-id="events"].active    { background: linear-gradient(135deg,#ec4899,#be185d); }
+  .tab .p { font-size: 10px; opacity: .65; margin-left: 3px; }
+
+  /* ── Panel ── */
+  .panel { display: none; max-width: 1080px; margin: 0 auto; padding: 0 20px 60px; }
+  .panel.active { display: block; animation: fadeUp .35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .mh { text-align: center; margin-bottom: 28px; }
+  .mh h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+  .mh .g { font-size: 13px; color: #777; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+  /* ── Branch ── */
+  .branch { margin-bottom: 20px; }
+  .bh {
+    display: flex; align-items: center; gap: 11px; padding: 13px 18px;
+    border-radius: 12px; cursor: pointer; transition: all .25s; user-select: none;
+  }
+  .bh:hover { transform: translateX(4px); }
+  .bi {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+  }
+  .bt { font-size: 15px; font-weight: 700; }
+  .bd { font-size: 11px; color: #777; margin-top: 2px; }
+  .ba { margin-left: auto; font-size: 11px; color: #555; transition: transform .3s; }
+  .branch.open .ba { transform: rotate(180deg); }
+  .bc { display: none; padding: 8px 0 0 24px; }
+  .branch.open .bc { display: block; }
+
+  /* ── Leaf ── */
+  .lg { margin-bottom: 14px; position: relative; padding-left: 28px; }
+  .lg::before {
+    content: ''; position: absolute; left: 8px; top: 0; bottom: 10px;
+    width: 2px; background: rgba(255,255,255,0.04); border-radius: 1px;
+  }
+  .lf {
+    position: relative; padding: 10px 15px; margin-bottom: 6px;
+    border-radius: 8px; background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.05); transition: all .2s;
+  }
+  .lf:hover { background: rgba(255,255,255,0.055); border-color: rgba(255,255,255,0.1); transform: translateX(2px); }
+  .lf::before {
+    content: ''; position: absolute; left: -19px; top: 50%;
+    width: 13px; height: 2px; background: rgba(255,255,255,0.06);
+  }
+  .lt { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ld { font-size: 11.5px; color: #777; margin-top: 4px; line-height: 1.6; }
+  .ld b { color: #e0e0e0; font-weight: 600; }
+
+  /* ── Tags ── */
+  .tag {
+    display: inline-block; padding: 1px 8px; border-radius: 10px;
+    font-size: 10px; font-weight: 700; flex-shrink: 0; white-space: nowrap;
+  }
+  .tag.daily   { background: rgba(16,185,129,0.15); color: #10b981; }
+  .tag.weekly  { background: rgba(59,130,246,0.15); color: #3b82f6; }
+  .tag.monthly { background: rgba(168,85,247,0.15); color: #a855f7; }
+  .tag.seasonal{ background: rgba(245,158,11,0.15); color: #f59e0b; }
+  .tag.special { background: rgba(236,72,153,0.15); color: #ec4899; }
+  .tag.crit    { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+  .tag.core    { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+
+  /* ── Warn / Tip ── */
+  .warn {
+    margin-top: 12px; padding: 12px 16px; border-radius: 9px;
+    background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.15);
+    font-size: 12px; color: #d97706; line-height: 1.6;
+  }
+  .warn b { color: #f59e0b; }
+  .tip {
+    margin-top: 12px; padding: 12px 16px; border-radius: 9px;
+    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15);
+    font-size: 12px; color: #60a5fa; line-height: 1.6;
+  }
+  .tip b { color: #93c5fd; }
+  .dl {
+    text-align: center; font-size: 10.5px; color: #555; margin: 6px 0 12px; position: relative;
+  }
+  .dl::before, .dl::after {
+    content: ''; position: absolute; top: 50%; width: 26%; height: 1px;
+    background: rgba(255,255,255,0.04);
+  }
+  .dl::before { left: 8%; }
+  .dl::after { right: 8%; }
+
+  /* ── KPI ── */
+  .ks {
+    margin-top: 24px; padding: 18px; border-radius: 12px;
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  }
+  .ks-t { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: #999; }
+  .kg { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+  .ki { padding: 10px 14px; border-radius: 8px; background: rgba(255,255,255,0.025); border-left: 3px solid; }
+  .kn { font-size: 11px; color: #777; }
+  .kv { font-size: 15px; font-weight: 800; margin-top: 2px; }
+
+  /* ── Theme Colors per Tab ── */
+  .t1 .bh { background: rgba(16,185,129,0.07); }
+  .t1 .bi { background: rgba(16,185,129,0.15); }
+  .t1 .bt { color: #34d399; }
+  .t1 .ki { border-color: #10b981; }
+  .t1 .kv { color: #34d399; }
+
+  .t2 .bh { background: rgba(59,130,246,0.07); }
+  .t2 .bi { background: rgba(59,130,246,0.15); }
+  .t2 .bt { color: #60a5fa; }
+  .t2 .ki { border-color: #3b82f6; }
+  .t2 .kv { color: #60a5fa; }
+
+  .t3 .bh { background: rgba(245,158,11,0.07); }
+  .t3 .bi { background: rgba(245,158,11,0.15); }
+  .t3 .bt { color: #fbbf24; }
+  .t3 .ki { border-color: #f59e0b; }
+  .t3 .kv { color: #fbbf24; }
+
+  .t4 .bh { background: rgba(239,68,68,0.07); }
+  .t4 .bi { background: rgba(239,68,68,0.15); }
+  .t4 .bt { color: #f87171; }
+  .t4 .ki { border-color: #ef4444; }
+  .t4 .kv { color: #f87171; }
+
+  .t5 .bh { background: rgba(139,92,246,0.07); }
+  .t5 .bi { background: rgba(139,92,246,0.15); }
+  .t5 .bt { color: #a78bfa; }
+  .t5 .ki { border-color: #8b5cf6; }
+  .t5 .kv { color: #a78bfa; }
+
+  .t6 .bh { background: rgba(236,72,153,0.07); }
+  .t6 .bi { background: rgba(236,72,153,0.15); }
+  .t6 .bt { color: #f472b6; }
+  .t6 .ki { border-color: #ec4899; }
+  .t6 .kv { color: #f472b6; }
+
+  @media (max-width: 640px) {
+    .header h1 { font-size: 20px; }
+    .tab { padding: 8px 13px; font-size: 11px; }
+    .kg { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>运营活动框架</h1>
+  <div class="sub">六大模块 × 活动类型 × 频次节奏 × 执行细节 × 指标看板</div>
+  <div class="ctx">
+    <b>框架定位：</b>以德扑平台为核心，围绕玩家全生命周期设计运营活动体系<br>
+    <b>核心逻辑：</b>留存打基础 → 活跃拉频次 → 付费做转化 → 消耗控经济 → 玩牌提体验 → 赛事造高潮<br>
+    <b>设计原则：</b>活动即工具，给 Host 和玩家理由聚在一起；节奏感 > 数量；社交驱动 > 利益驱动
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot daily"></div>每日常规</div>
+  <div class="legend-item"><div class="dot weekly"></div>每周活动</div>
+  <div class="legend-item"><div class="dot monthly"></div>每月活动</div>
+  <div class="legend-item"><div class="dot seasonal"></div>赛季/节日</div>
+  <div class="legend-item"><div class="dot special"></div>特殊/一次性</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-id="retention" onclick="sw('retention')">① 留存 <span class="p">P0</span></div>
+  <div class="tab" data-id="active" onclick="sw('active')">② 活跃 <span class="p">P0</span></div>
+  <div class="tab" data-id="payment" onclick="sw('payment')">③ 付费 <span class="p">P1</span></div>
+  <div class="tab" data-id="consume" onclick="sw('consume')">④ 消耗 <span class="p">P1</span></div>
+  <div class="tab" data-id="gameplay" onclick="sw('gameplay')">⑤ 玩牌 <span class="p">P0</span></div>
+  <div class="tab" data-id="events" onclick="sw('events')">⑥ 赛事 <span class="p">P2</span></div>
+</div>
+
+<!-- ============================= -->
+<!-- ===== 1. 留存模块 ===== -->
+<!-- ============================= -->
+<div class="panel active" id="panel-retention">
+  <div class="mh">
+    <h2 style="color:#34d399">① 留存活动体系</h2>
+    <div class="g">让每个来的人都有理由留下 · 短期靠利益钩子，长期靠社交关系和习惯养成</div>
+  </div>
+  <div class="tree t1">
+
+    <!-- 新人留存 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🌱</div><div><div class="bt">新人首周留存活动</div><div class="bd">黄金 7 天决定生死，密集触达 + 正反馈</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>新手 7 日签到礼</div><div class="ld">每日递增奖励：<b>D1</b>:1000筹码 → <b>D2</b>:1500 → <b>D3</b>:2000+入局券×1 → <b>D4</b>:2500 → <b>D5</b>:3000+头像框 → <b>D6</b>:4000 → <b>D7</b>:8000+专属称号<br>断签不重置但奖励不补发，鼓励连续但不惩罚</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>新人任务链</div><div class="ld"><b>D1</b>：完成首局 → 送筹码<br><b>D2</b>：添加 1 个好友 → 送入局券<br><b>D3</b>：参加俱乐部局 → 送筹码<br><b>D4</b>：赢得 1 个底池 → 送表情包<br><b>D5</b>：邀请 1 个好友 → 双方各得筹码<br><b>D6</b>：打满 5 局 → 送专属牌背<br><b>D7</b>：通关奖励 → 大额筹码+新手毕业头像框</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>新人保护池</div><div class="ld">注册 7 天内专属低盲注保护桌 → 最大买入限制 → 防止被老手收割导致流失<br>保护桌标记"新手友好"，鼓励新人互打</div></div>
+      </div>
+      <div class="tip"><b>设计要点：</b>新人首周每天至少 1 个"惊喜时刻"，让他觉得"明天还想来看看有什么"</div>
+    </div></div>
+
+    <!-- 日常签到 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">📅</div><div><div class="bt">日常签到体系</div><div class="bd">养成每日打开习惯，签到是最低成本的留存工具</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>基础签到</div><div class="ld">每日登录领筹码，3 日循环递增：<b>Day1</b>:500 → <b>Day2</b>:800 → <b>Day3</b>:1500，断签重置<br>签到界面展示好友签到状态（"XX 也签到了"）增加社交感</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周连续签到奖励</div><div class="ld">连续签到 5 天 → 周末大礼包（5000 筹码+入局券×2+限时头像框）<br>7 天全勤 → 额外抽奖机会（奖池：大额筹码/稀有道具/实物周边）</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月签到累计</div><div class="ld">签到满 15 天 → 月度专属牌桌皮肤<br>签到满 25 天 → 月度限定称号 + 大额筹码<br>月底展示签到排行榜（俱乐部维度）</div></div>
+      </div></div>
+    </div>
+
+    <!-- 流失召回 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">📢</div><div><div class="bt">流失召回活动</div><div class="bd">分层触达 · Host 私人召回 > 系统召回</div></div><div class="ba">▼</div></div>
+      <div class="bc">
+        <div class="dl">—— 按流失天数分层 ——</div>
+        <div class="lg">
+          <div class="lf"><div class="lt"><span class="tag daily">48h</span>轻度流失 — 社交唤醒</div><div class="ld">通知 Host → Host 发私人消息："今晚有局，就差你了"<br>系统 Push："你的好友 XX 刚赢了大底池！"<br>不给利益，用社交拉回来</div></div>
+          <div class="lf"><div class="lt"><span class="tag weekly">3-7天</span>中度流失 — 利益召回</div><div class="ld">Host 一键召回 + 系统发"回归礼包"（2000 筹码+入局券×2）<br>Push 文案：<b>"你的俱乐部排名掉了 5 名，回来打两把？"</b><br>Host 可花筹码（平台补贴 50%）给流失玩家发红包</div></div>
+          <div class="lf"><div class="lt"><span class="tag monthly">7-14天</span>重度流失 — 限时大礼包</div><div class="ld">邮件/短信发送"回归专属礼包"：5000 筹码+3 张入局券+限时 VIP 体验卡<br><b>24 小时有效</b>，制造紧迫感<br>回归后首局匹配好友/Host 桌，重建社交连接</div></div>
+          <div class="lf"><div class="lt"><span class="tag seasonal">30天+</span>深度流失 — 版本召回</div><div class="ld">大版本更新/重大赛事时群发召回："全新赛事系统上线，老朋友回来看看"<br>回归送"老友归来"限定头像框+大额筹码<br>降低触达频率，每月最多 1 次</div></div>
+        </div>
+      </div>
+      <div class="warn"><b>注意：</b>所有召回活动 Host 私人触达优先于系统通知 · Push 频率严格控制（每日最多 2 条）· 30天+ 用户不要高频打扰</div>
+    </div></div>
+
+    <!-- 社交留存 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🤝</div><div><div class="bt">社交关系留存</div><div class="bd">人留人，不是平台留人 · 社交关系越深留存越高</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>好友互动奖励</div><div class="ld">每日与好友对局 → 双方额外获得 <b>10% 筹码加成</b><br>好友越多加成上限越高（3 好友封顶 30%）→ 激励加好友</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>俱乐部签到奖励</div><div class="ld">俱乐部内每周活跃满 3 天 → 额外俱乐部专属筹码<br>俱乐部全员活跃达标 → 全体成员获得奖励（集体荣誉感）</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>社交关系里程碑</div><div class="ld">好友数达到 10/20/50 → 解锁对应成就+奖励<br>与同一好友对局满 20 局 → 解锁"老对手"成就+专属互动表情</div></div>
+      </div></div>
+    </div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">新人次日留存</div><div class="kv">> 30%</div></div>
+    <div class="ki"><div class="kn">新人 7 日留存</div><div class="kv">> 15%</div></div>
+    <div class="ki"><div class="kn">日常签到率</div><div class="kv">> 40%</div></div>
+    <div class="ki"><div class="kn">7 天召回率</div><div class="kv">> 12%</div></div>
+    <div class="ki"><div class="kn">俱乐部周活跃率</div><div class="kv">> 60%</div></div>
+  </div></div>
+</div>
+
+
+<!-- ============================= -->
+<!-- ===== 2. 活跃模块 ===== -->
+<!-- ============================= -->
+<div class="panel" id="panel-active">
+  <div class="mh">
+    <h2 style="color:#60a5fa">② 活跃活动体系</h2>
+    <div class="g">留存解决"来不来"，活跃解决"玩多久" · 提升在线时长和对局频次</div>
+  </div>
+  <div class="tree t2">
+
+    <!-- 每日活跃 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">⚡</div><div><div class="bt">每日活跃任务</div><div class="bd">轻量可完成 · 每天给玩家一个"今天该干嘛"</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>每日三任务</div><div class="ld">每天随机 3 个轻量任务（从任务池抽取）：<br><b>对局类</b>：打满 3 局 / 赢 1 个底池 / 打 1 局大厅<br><b>社交类</b>：给好友点赞 / 俱乐部发言 / 观战 1 局<br><b>成长类</b>：查看战绩 / 完成 1 次签到 / 分享 1 次牌局<br>完成 2/3 → 小奖，3/3 → 大奖+翻倍卡</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>活跃时段加成</div><div class="ld">每日 2 个高峰时段（如 20:00-22:00）对局筹码收益 <b>+20%</b><br>倒计时提醒："黄金时段还有 30 分钟开始，你的好友 XX 已就位"<br>集中人气到固定时段，解决"上来没人"问题</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>幸运翻牌</div><div class="ld">每日首次登录 → 翻 3 张牌选 1 张（筹码/入局券/道具/空）<br>VIP 可翻 2 张 → 付费转化入口<br>连续 3 天翻到"空" → 保底出好东西（防止体验过差）</div></div>
+      </div></div>
+    </div>
+
+    <!-- 每周活跃 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🗓️</div><div><div class="bt">每周固定活动</div><div class="bd">建立节奏感 · 让玩家知道"周几该干什么"</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag crit">核心</span>周末狂欢夜（周五/六）</div><div class="ld">每周五/六 20:00-24:00 固定活动时段：<br><b>奖池翻倍</b> + <b>特殊牌型额外奖励</b>（同花顺+5000）+ <b>全场 MVP 奖</b><br>Host 可提前"预约开局" → 推送俱乐部全体成员<br>活动结束生成"本周战报"分享卡</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周中挑战赛（周三）</div><div class="ld">每周三设定特殊挑战：本周目标"累计赢 10 个底池"<br>达标者瓜分奖池 → 参与人越多奖池越大<br>设低门槛让大多数活跃玩家能完成，培养参与习惯</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周排行榜</div><div class="ld"><b>个人榜</b>：周内对局数/胜率/筹码变化 TOP 10 → 展示+奖励<br><b>俱乐部榜</b>：俱乐部总对局数排名 → 前 3 名全员奖励<br>每周一重置，人人有机会上榜</div></div>
+      </div></div>
+    </div>
+
+    <!-- 在线时长 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">⏱️</div><div><div class="bt">在线时长激励</div><div class="bd">不鼓励挂机，鼓励"有效在线"（对局中/观战中）</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>对局里程碑奖励</div><div class="ld">每日打满 <b>3 局</b> → 小奖 · <b>5 局</b> → 中奖 · <b>10 局</b> → 大奖+当日封顶<br>按对局数而非时长计算 → 防挂机，鼓励真实对局</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周对局目标</div><div class="ld">每周打满 15/25/40 局 → 分档奖励<br>40 局 → "本周牌神"称号（限时 1 周）+ 大额筹码<br>进度条可视化，每局结束更新</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>观战宝箱</div><div class="ld">观战好友对局满 5 分钟 → 开出随机宝箱<br>每日最多 2 次 → 低成本提升 DAU，观战也是活跃</div></div>
+      </div>
+      <div class="warn"><b>注意：</b>所有时长激励都以"有效行为"计算（对局/观战），杜绝挂机刷奖励</div>
+    </div></div>
+
+    <!-- 社交活跃 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">💬</div><div><div class="bt">社交互动活跃</div><div class="bd">让"社交行为"本身成为活跃驱动力</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>好友约战</div><div class="ld">每日可向好友发送"约战卡"→ 对方接受后双方进入专属桌 → 完成对局双方得奖励<br>约战卡每日免费 3 张，用完可花筹码购买</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>俱乐部活跃挑战</div><div class="ld">俱乐部本周累计对局数达标 → 解锁全员奖励<br><b>100 局</b> → 全员 1000 筹 / <b>300 局</b> → 全员 3000 筹+俱乐部装饰 / <b>500 局</b> → 全员大奖<br>进度条在俱乐部首页实时显示</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>最佳牌友评选</div><div class="ld">每月结束投票评选"最佳牌友"（俱乐部内）<br>维度：对局数 / 互动频率 / 被点赞数<br>获选者得专属月度称号 + 奖励</div></div>
+      </div></div>
+    </div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">日均对局数/人</div><div class="kv">> 3 局</div></div>
+    <div class="ki"><div class="kn">每日任务完成率</div><div class="kv">> 45%</div></div>
+    <div class="ki"><div class="kn">周末活动参与率</div><div class="kv">> 50%</div></div>
+    <div class="ki"><div class="kn">周活跃天数/人</div><div class="kv">> 3.5 天</div></div>
+    <div class="ki"><div class="kn">俱乐部挑战参与率</div><div class="kv">> 60%</div></div>
+  </div></div>
+</div>
+
+
+<!-- ============================= -->
+<!-- ===== 3. 付费模块 ===== -->
+<!-- ============================= -->
+<div class="panel" id="panel-payment">
+  <div class="mh">
+    <h2 style="color:#fbbf24">③ 付费活动体系</h2>
+    <div class="g">免费玩家是生态基础，付费玩家是收入来源 · 用活动制造"付费理由"而非"付费压力"</div>
+  </div>
+  <div class="tree t3">
+
+    <!-- 首充活动 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">💰</div><div><div class="bt">首充转化活动</div><div class="bd">破冰最难 · 让第一次付费无比划算</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag crit">核心</span>首充双倍</div><div class="ld">首次充值任意金额 → 筹码 <b>×2</b> + 赠送 3 天 VIP 体验<br>全局常驻入口（个人中心+筹码不足时弹窗）<br><b>终身一次</b>，制造"不买就亏了"的心理</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>每日特惠（针对未充值用户）</div><div class="ld">每日限时 1 小时超值小额包（如 ¥6 得 3000 筹码，日常价 ¥6=1500）<br>倒计时 + "今日已有 XX 人购买" → 从众心理<br>仅未充值用户可见，充值后替换为其他活动</div></div>
+        <div class="lf"><div class="lt"><span class="tag special">触发式</span>筹码耗尽触发</div><div class="ld">玩家筹码 < 500 时 → 弹出"急救包"（超值小额充值）<br>文案：<b>"别让手气断了，¥6 续上"</b><br>每日最多弹 1 次，不能骚扰</div></div>
+      </div>
+      <div class="tip"><b>策略：</b>首充转化的核心是"降低决策门槛" → 金额要小（¥6-¥12）、价值感要高（×2 + 赠品）、时机要准（输光/想玩没筹码时）</div>
+    </div></div>
+
+    <!-- 周期性付费 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🔄</div><div><div class="bt">周期性付费活动</div><div class="bd">让付费成为习惯而非冲动 · 创造持续付费理由</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周末限定礼包</div><div class="ld">每周五上架，周日下架 → 3 档：<br><b>小</b>（¥12）：3000 筹+入局券×2<br><b>中</b>（¥30）：8000 筹+入局券×5+限时表情<br><b>大</b>（¥68）：20000 筹+入局券×10+本周专属牌背<br>搭配周末狂欢夜，消费场景配合活动场景</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月卡 / 通行证</div><div class="ld"><b>月卡</b>（¥30/月）：每日领 1000 筹码 + 全月 VIP 特权（翻牌 ×2 / 专属表情）<br><b>赛季通行证</b>（¥68/赛季）：对局积累经验 → 解锁赛季奖励轨道<br>免费轨道人人有 → 付费轨道奖励 ×3 + 独占道具</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月度充值返利</div><div class="ld">当月累计充值达标返额外筹码：<br><b>¥50</b> → 返 2000 / <b>¥100</b> → 返 5000 / <b>¥200</b> → 返 12000+月度限定称号<br>月底结算，下月初发放 → 跨月留存</div></div>
+      </div></div>
+    </div>
+
+    <!-- 限时付费 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">⏰</div><div><div class="bt">限时促销活动</div><div class="bd">制造稀缺性 · 特定时间点的付费刺激</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag seasonal">节日</span>节日限定礼包</div><div class="ld">圣诞/新年/春节/情人节等 → 主题礼包（限定皮肤+筹码+道具）<br>节日专属牌桌装饰 → 付费解锁或充值满赠<br>限时 3-7 天 → 倒计时营造紧迫感</div></div>
+        <div class="lf"><div class="lt"><span class="tag special">不定期</span>闪购 Flash Sale</div><div class="ld">不定期推出 2 小时超级特惠（价格打 5 折）<br>提前 30 分钟 Push 预告 → 制造期待<br>每月最多 2 次 → 保持稀缺感</div></div>
+        <div class="lf"><div class="lt"><span class="tag seasonal">赛季</span>赛事入场券售卖</div><div class="ld">重大赛事前售卖入场资格：<br><b>免费赛</b> → 人人可参加<br><b>付费赛</b> → 入场券（¥12-¥68）→ 奖池更大<br>早鸟价 8 折 → 激励提前购买</div></div>
+      </div></div>
+    </div>
+
+    <!-- Host 付费 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">👑</div><div><div class="bt">Host 专属付费</div><div class="bd">Host 是大 R，给 Host 值得花钱的理由</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>Host 特权包</div><div class="ld">月付 ¥98 → 俱乐部专属装饰 + 成员上限提升 + 数据看板增强 + 专属客服<br>Host 等级越高折扣越大（S 级 Host 免费赠送）</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>Host 活动筹码包</div><div class="ld">Host 购买"活动筹码"用于俱乐部内活动发奖<br>平台补贴 30%（Host 花 100，实际发 130）<br>Host 花钱 = 俱乐部活跃 = 平台数据好看 → 三赢</div></div>
+      </div></div>
+    </div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">首充转化率</div><div class="kv">> 8%</div></div>
+    <div class="ki"><div class="kn">月卡续费率</div><div class="kv">> 40%</div></div>
+    <div class="ki"><div class="kn">付费用户 ARPU</div><div class="kv">逐月提升</div></div>
+    <div class="ki"><div class="kn">周末礼包购买率</div><div class="kv">> 15%</div></div>
+    <div class="ki"><div class="kn">Host 付费率</div><div class="kv">> 30%</div></div>
+  </div></div>
+</div>
+
+
+<!-- ============================= -->
+<!-- ===== 4. 消耗模块 ===== -->
+<!-- ============================= -->
+<div class="panel" id="panel-consume">
+  <div class="mh">
+    <h2 style="color:#f87171">④ 消耗活动体系</h2>
+    <div class="g">经济系统健康 = 产出和消耗平衡 · 让玩家"花得开心"而不是"被迫消耗"</div>
+  </div>
+  <div class="tree t4">
+
+    <!-- 日常消耗 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🔥</div><div><div class="bt">日常筹码消耗</div><div class="bd">对局本身是最大消耗场景，活动补充额外消耗点</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>对局抽水（Rake）</div><div class="ld">每局按底池比例抽水（3-5%）→ 最基础的筹码回收机制<br>新手桌降低抽水比例 → 保护新人体验<br>高盲注桌适当提高 → 大R消耗快，付费意愿也强</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>道具消耗</div><div class="ld"><b>表情/动作</b>：对局中使用消耗少量筹码（10-50/次）<br><b>记牌器</b>：单局使用消耗 200 筹码 → 功能性消耗<br><b>好运卡</b>：消耗 500 筹码开局自带"好运 Buff"（纯视觉，无实际效果）</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>高级匹配消耗</div><div class="ld">大厅"优先匹配"：消耗 200 筹码 → 排队优先+匹配同水平玩家<br>"选桌"功能：消耗 500 筹码 → 查看各桌平均筹码后选择入座<br>功能性消耗，花了有实际好处</div></div>
+      </div></div>
+    </div>
+
+    <!-- 抽奖/博弈消耗 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🎰</div><div><div class="bt">抽奖与博弈消耗</div><div class="bd">德扑玩家天然爱博弈 · 用"小赌"消耗筹码</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>幸运转盘</div><div class="ld">每日免费 1 次，额外付费 500 筹码/次（最多 5 次）<br>奖池：筹码/入局券/道具/稀有皮肤/空<br>大奖概率低但展示"XX 刚抽到大奖" → 刺激消费</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>竞猜活动</div><div class="ld">每周末开放：猜赢家/猜牌型/猜底池大小<br>下注 500-5000 筹码 → 猜中 ×3 返还<br>全服实时参与人数+奖池展示 → 氛围感</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月度大抽奖</div><div class="ld">月底用当月累计"幸运币"（对局/任务获得）参与大抽奖<br>奖池：超大额筹码 / 实物奖品 / 限定道具<br>幸运币不累积到下月 → 当月必须花完 → 月底消耗高峰</div></div>
+      </div></div>
+    </div>
+
+    <!-- 装扮消耗 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🎨</div><div><div class="bt">装扮与个性化消耗</div><div class="bd">虚荣心消耗 · 花筹码"变好看"</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">常驻</span>商城道具</div><div class="ld"><b>头像框</b>（2000-10000 筹）/ <b>牌背</b>（5000-20000 筹）/ <b>桌布</b>（3000-15000 筹）/ <b>入场动效</b>（8000-30000 筹）<br>分级：普通→稀有→史诗→传说 → 价格和稀有度挂钩</div></div>
+        <div class="lf"><div class="lt"><span class="tag seasonal">限时</span>限定皮肤</div><div class="ld">节日/赛季限定道具 → 过期下架不复售<br><b>"拥有即稀缺"</b> → 收藏心理驱动消耗<br>限定道具可在个人主页展示 → 社交炫耀</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>俱乐部装饰</div><div class="ld">Host 用筹码装扮俱乐部：主题皮肤/欢迎语/专属牌桌样式<br>成员看到装饰 → 感知"这个俱乐部很用心" → 归属感<br>每月上新 → 持续消耗点</div></div>
+      </div></div>
+    </div>
+
+    <!-- 经济调控 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">📊</div><div><div class="bt">经济系统调控工具</div><div class="bd">监控产出/消耗比，防止通胀崩盘</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>筹码产消比监控</div><div class="ld">每日统计：总产出 vs 总消耗 → 健康比 1:0.7~0.9<br>产出 > 消耗 → 通胀预警 → 减少免费发放 / 增加消耗活动<br>消耗 > 产出 → 通缩预警 → 增加福利 / 降低消耗门槛</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>筹码回收活动</div><div class="ld">当通胀预警时启动："筹码兑换限定道具"活动<br>把多余筹码变成不可交易的装饰品 → 从经济系统中移除<br>玩家觉得"花得值" → 实际是回收筹码</div></div>
+      </div>
+      <div class="warn"><b>底线：</b>永远不要让免费玩家完全打不了牌 · 消耗活动是"锦上添花"不是"雪上加霜" · 破产救济金机制必须保留</div>
+    </div></div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">筹码月产消比</div><div class="kv">1:0.7~0.9</div></div>
+    <div class="ki"><div class="kn">道具商城购买率</div><div class="kv">> 20%</div></div>
+    <div class="ki"><div class="kn">月通胀率</div><div class="kv">< 10%</div></div>
+    <div class="ki"><div class="kn">日均筹码消耗/人</div><div class="kv">稳步增长</div></div>
+  </div></div>
+</div>
+
+
+<!-- ============================= -->
+<!-- ===== 5. 玩牌模块 ===== -->
+<!-- ============================= -->
+<div class="panel" id="panel-gameplay">
+  <div class="mh">
+    <h2 style="color:#a78bfa">⑤ 玩牌活动体系</h2>
+    <div class="g">一切运营的根基是"牌好不好打" · 围绕对局体验设计活动，让每一手牌都有故事</div>
+  </div>
+  <div class="tree t5">
+
+    <!-- 对局体验 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🃏</div><div><div class="bt">对局增强活动</div><div class="bd">让普通对局变得更有趣 · 不改规则但加 buff</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>每日特殊牌型奖励</div><div class="ld">每天指定一个"幸运牌型"（如今日：同花）<br>打出该牌型 → 额外奖励 500-2000 筹码<br>对局中顶部 banner 提示今日牌型 → 增加对局策略维度</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>疯狂牌局时段</div><div class="ld">每周六晚 21:00-23:00 "疯狂 2 小时"：<br><b>随机事件</b>：每 5 手牌触发一次（底池 ×2 / 全员加注 / 盲注翻倍）<br>仅大厅特定桌 → 不影响正常好友局<br>增加娱乐性和话题性</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>主题月玩法</div><div class="ld">每月设定主题规则桌（限时开放）：<br><b>1月</b>："短牌月"（去掉 2-5）<br><b>2月</b>："Omaha 月"（四张底牌）<br><b>3月</b>："Bounty 月"（淘汰对手得赏金）<br>低成本试水不同玩法，测试玩家偏好</div></div>
+      </div></div>
+    </div>
+
+    <!-- 成就系统 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🏆</div><div><div class="bt">对局成就体系</div><div class="bd">长期目标感 · 让每一手牌都在积累"什么"</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>牌型成就</div><div class="ld"><b>对子猎手</b>（打出 100 次对子）→ <b>同花收藏家</b>（50 次同花）→ <b>皇家传说</b>（1 次皇家同花顺）<br>每个成就 = 永久称号 + 筹码奖励 + 展示徽章<br>皇家同花顺 = 全服公告 + 传说级奖励（极稀有，极有话题性）</div></div>
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>对局里程碑</div><div class="ld"><b>100局</b>：初学者毕业 → <b>500局</b>：进阶牌手 → <b>1000局</b>：资深玩家 → <b>5000局</b>：牌桌传奇<br>每个里程碑 = 等级提升 + 解锁新功能/特权<br>个人主页展示总局数 → 社交资本</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周挑战徽章</div><div class="ld">每周随机 3 个挑战（如"一周内赢 5 次全下" / "连胜 3 局"）<br>完成后获得该周限定徽章 → 不可交易不可购买<br>只有那一周完成的人才有 → 稀缺收藏价值</div></div>
+      </div></div>
+    </div>
+
+    <!-- 好友局增强 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">👥</div><div><div class="bt">好友局专属活动</div><div class="bd">好友局是核心场景 · 让"和朋友打牌"体验更丰富</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>好友局加成时段</div><div class="ld">每日 2 个时段好友局奖励 +30%（20:00-22:00 / 14:00-15:00）<br>鼓励集中时段开局 → 解决"约不齐人"的问题</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>俱乐部内战周报</div><div class="ld">每周自动生成俱乐部战报：<br>本周牌王 / 最大底池 / 最佳诈唬 / 最惨 Bad Beat<br>生成精美分享卡 → Host 转发到群里 → 话题 + 拉活跃</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>好友 PK 赛季</div><div class="ld">好友之间自动记录胜负（月度）<br>月底结算"好友对战排行" → 赢最多的获"最强好友"称号<br>生成"月度宿敌"卡 → 趣味社交传播</div></div>
+      </div></div>
+    </div>
+
+    <!-- 战绩与分享 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">📸</div><div><div class="bt">战绩展示与分享</div><div class="bd">让好牌局被看见 · 传播即活跃</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每局</span>精彩时刻自动捕捉</div><div class="ld">系统自动识别：大底池 / 逆转 / 特殊牌型 / All-in 摊牌<br>自动生成精美回顾卡 → 一键分享到社交平台<br>"恭喜！你刚用同花顺赢了 50000 筹码底池！"</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>个人周报</div><div class="ld">每周一自动推送：本周战绩/胜率/最佳一手/筹码变化曲线<br>精美设计 → 鼓励分享到朋友圈/社交群<br>"你本周排名超过了 72% 的玩家"</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月度高光集锦</div><div class="ld">全服月度最佳牌局 TOP 10 → 投票评选 → 上榜者得大奖<br>制作成短视频/图文 → 官方社交媒体发布<br>被选中的玩家 = 平台的免费代言人</div></div>
+      </div></div>
+    </div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">人均日对局数</div><div class="kv">> 3 局</div></div>
+    <div class="ki"><div class="kn">成就解锁率</div><div class="kv">> 40%</div></div>
+    <div class="ki"><div class="kn">分享卡生成率</div><div class="kv">> 20% 对局</div></div>
+    <div class="ki"><div class="kn">分享卡外传率</div><div class="kv">> 10%</div></div>
+    <div class="ki"><div class="kn">好友局占总对局</div><div class="kv">> 60%</div></div>
+  </div></div>
+</div>
+
+
+<!-- ============================= -->
+<!-- ===== 6. 赛事模块 ===== -->
+<!-- ============================= -->
+<div class="panel" id="panel-events">
+  <div class="mh">
+    <h2 style="color:#f472b6">⑥ 赛事活动体系</h2>
+    <div class="g">赛事是最高级的活动形态 · 制造仪式感和巅峰体验 · 按 DAU 分阶段推进</div>
+  </div>
+  <div class="tree t6">
+
+    <!-- 日常小赛 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🎯</div><div><div class="bt">日常轻量赛事（DAU < 300 即可）</div><div class="bd">2 个人就能玩的"赛事" · 门槛极低</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>每日擂台赛</div><div class="ld">每天 3 个时段（12:00/18:00/21:00）开放 30 分钟擂台<br>规则：固定手数（20 手）→ 结束时筹码最多者为擂主<br>奖励：擂主得奖池 + "今日擂主"称号（展示到次日）<br><b>最低 3 人即可开赛</b>，人少也能玩</div></div>
+        <div class="lf"><div class="lt"><span class="tag daily">每日</span>好友 PK 卡</div><div class="ld">1v1 挑战：比 5 局 → 3 胜者赢<br>结果生成对战卡（含精彩数据）→ 社交传播<br>最小赛事单位，2 个人就能玩</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>俱乐部内部赛</div><div class="ld">每周日下午俱乐部内循环赛：成员间 Round Robin<br>Host 可设置奖池（平台补贴 30%）<br>俱乐部内排名 + 积分 → 月度俱乐部冠军</div></div>
+      </div></div>
+    </div>
+
+    <!-- 周期性赛事 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🏅</div><div><div class="bt">周期性正式赛事（DAU 300-1000）</div><div class="bd">有了一定人数基础后推出的标准化赛事</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag weekly">每周</span>周末锦标赛</div><div class="ld">每周六晚 20:00 开赛 · SNG 赛制（Sit & Go）<br>9 人一桌 → 前 3 名奖励 → 单桌即完成，不需要大量玩家<br>分免费赛（练手）+ 付费赛（¥12 入场，奖池更大）<br>报名即冻结 → 开赛前 Push 提醒</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>月度 MTT 锦标赛</div><div class="ld">每月最后一个周末 · 多桌锦标赛（Multi-Table Tournament）<br>Day1 海选（多场次）→ Day2 决赛桌<br>设立保底奖池 → 即使参赛人数少也值得打<br>冠军获"月冠军"称号 + 大额奖励 + 全服公告</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>俱乐部联赛</div><div class="ld">俱乐部间月度积分联赛：<br>每周俱乐部代表出战（3v3 或 5v5）→ 积分制<br>月底积分前 3 名俱乐部 → 全员奖励 + 俱乐部荣誉装饰<br>Host 的核心动力 → 为了俱乐部荣誉拉人组队</div></div>
+      </div></div>
+    </div>
+
+    <!-- 赛季制 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🏆</div><div><div class="bt">赛季制（DAU > 1000）</div><div class="bd">建立长线赛事体系 · Season Pass 模式</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag seasonal">赛季</span>赛季通行证</div><div class="ld">每赛季 4-6 周 → 对局/任务积累赛季经验 → 解锁奖励轨道<br><b>免费轨道</b>：基础奖励人人有<br><b>付费轨道</b>（¥68）：奖励 ×3 + 赛季限定皮肤/称号/牌背<br>赛季结束不可补买 → 稀缺性驱动</div></div>
+        <div class="lf"><div class="lt"><span class="tag seasonal">赛季</span>赛季排位赛</div><div class="ld">赛季内 ELO 排位系统：<br><b>青铜→白银→黄金→铂金→钻石→大师→传说</b><br>每赛季重置（保留一半段位）→ 持续动力<br>段位 = 匹配依据 → 水平接近打得更爽</div></div>
+        <div class="lf"><div class="lt"><span class="tag seasonal">赛季</span>赛季总决赛</div><div class="ld">每赛季末举办"赛季总决赛"：<br>资格：赛季排位 Top 100 / 月赛冠军 / 俱乐部联赛冠军代表<br>线上直播 + 解说 → 打造平台 IP 赛事<br>冠军奖金 + 永久"赛季冠军"称号 + 实物奖杯</div></div>
+      </div>
+      <div class="warn"><b>前提条件：</b>DAU > 1000 再启动赛季制 · DAU < 300 先做好日常小赛和俱乐部内部赛 · 赛季制是终极形态不是起步形态</div>
+    </div></div>
+
+    <!-- 特殊赛事 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">🎪</div><div><div class="bt">特殊主题赛事</div><div class="bd">制造话题 · 打破日常节奏 · 吸引回流</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag seasonal">节日</span>节日主题赛</div><div class="ld">圣诞赛/新年杯/春节锦标赛/万圣节暗黑赛<br>主题装饰 + 特殊规则（如圣诞赛：每局随机发一张"礼物牌"当万能牌）<br>限时 3 天 → 制造事件感</div></div>
+        <div class="lf"><div class="lt"><span class="tag special">不定期</span>名人邀请赛</div><div class="ld">邀请德扑 KOL/主播参赛 → 玩家可报名同桌<br>"和大神同桌打牌" → 话题性极强<br>全程直播 + 互动弹幕 → DAU > 500 后考虑</div></div>
+        <div class="lf"><div class="lt"><span class="tag special">不定期</span>Freeroll 免费赛</div><div class="ld">不定期举办免费报名赛事 → 0 成本参与 → 奖池由平台出<br>目的：拉新 + 拉活跃 + 让从未参赛的玩家体验赛事<br>"你从未打过比赛？这次免费，来试试"</div></div>
+      </div></div>
+    </div>
+
+    <!-- 赛事周边 -->
+    <div class="branch open"><div class="bh" onclick="tog(this)"><div class="bi">📺</div><div><div class="bt">赛事配套体系</div><div class="bd">赛事不只是"打牌" · 围绕赛事建立完整体验</div></div><div class="ba">▼</div></div>
+      <div class="bc"><div class="lg">
+        <div class="lf"><div class="lt"><span class="tag core">核心</span>赛事日历</div><div class="ld">产品内常驻"赛事日历"页面：<br>展示未来 30 天所有赛事（时间/类型/奖池/报名状态）<br>一键预约提醒 → 开赛前 Push<br>让玩家知道"什么时候有什么比赛"</div></div>
+        <div class="lf"><div class="lt"><span class="tag weekly">每赛事</span>赛事回顾</div><div class="ld">每场赛事结束自动生成：冠军/精彩牌局/参赛数据<br>推送全服 + 社交媒体发布<br>"上周冠军 XX 用皇家同花顺绝杀夺冠" → 故事感</div></div>
+        <div class="lf"><div class="lt"><span class="tag monthly">每月</span>赛事积分排行</div><div class="ld">所有赛事统一积分体系 → 年度赛事积分排名<br>积分可兑换赛事专属道具 / 高级赛事入场券<br>积分榜 = 长线目标 → "我要成为今年的赛事王"</div></div>
+      </div></div>
+    </div>
+
+  </div>
+  <div class="ks"><div class="ks-t">📊 核心指标</div><div class="kg">
+    <div class="ki"><div class="kn">日常赛参与率</div><div class="kv">> 20%</div></div>
+    <div class="ki"><div class="kn">周末赛报名率</div><div class="kv">> 35%</div></div>
+    <div class="ki"><div class="kn">赛事日 DAU 提升</div><div class="kv">> 25%</div></div>
+    <div class="ki"><div class="kn">赛季通行证购买率</div><div class="kv">> 15%</div></div>
+    <div class="ki"><div class="kn">付费赛入场转化率</div><div class="kv">> 10%</div></div>
+  </div></div>
+</div>
+
+
+<script>
+function sw(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelector('.tab[data-id="'+id+'"]').classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+}
+function tog(h) { h.closest('.branch').classList.toggle('open'); }
+</script>
+</body>
+</html>
