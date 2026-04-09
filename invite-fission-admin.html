@@ -260,6 +260,9 @@ tbody tr:hover { background: #fafbfc; }
 .trans-zh { padding: 8px 12px; background: var(--bg-hover); border-radius: 6px; margin-bottom: 12px; color: var(--text); font-size: 14px; }
 .trans-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
 .trans-lang { width: 60px; text-align: right; font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
+.lang-remove { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%;
+  color: #ccc; cursor: pointer; font-size: 18px; flex-shrink: 0; transition: all .15s; border: 1px solid var(--border-light); background: #fff; }
+.lang-remove:hover { color: var(--danger); border-color: var(--danger); background: var(--danger-light); }
 
 /* ========== Visibility Section ========== */
 .id-textarea { width: 100%; height: 100px; margin-top: 8px; }
@@ -1014,10 +1017,11 @@ function openUserDetail(uid, name) {
 function renderTranslation() {
   const container = document.getElementById('transBlocks');
   container.innerHTML = TASKS_TRANS.map(task => {
-    const langRows = languages.map(lang =>
+    const langRows = languages.map((lang, li) =>
       `<div class="trans-row">
         <span class="trans-lang">${lang}:</span>
         <input type="text" class="input-full" placeholder="输入${lang}翻译...">
+        <span class="lang-remove" onclick="removeLanguage(${li})" title="删除${lang}">&minus;</span>
       </div>`
     ).join('');
     return `<div class="trans-block">
@@ -1026,6 +1030,14 @@ function renderTranslation() {
       ${langRows}
     </div>`;
   }).join('');
+}
+
+function removeLanguage(idx) {
+  const name = languages[idx];
+  if (!confirm(`确定删除「${name}」的所有翻译配置吗？`)) return;
+  languages.splice(idx, 1);
+  renderTranslation();
+  showToast(`已删除语言: ${name}`, 'warning');
 }
 
 function addLanguage() {
