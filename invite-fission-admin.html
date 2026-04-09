@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>邀请裂变活动后台 - ID:25465</title>
+<style>
+:root {
+  --primary: #1890ff;
+  --primary-light: #e6f4ff;
+  --primary-border: #91caff;
+  --success: #52c41a;
+  --success-light: #f6ffed;
+  --success-border: #b7eb8f;
+  --warning: #faad14;
+  --warning-light: #fffbe6;
+  --warning-border: #ffe58f;
+  --danger: #ff4d4f;
+  --danger-light: #fff2f0;
+  --purple: #722ed1;
+  --purple-light: #f9f0ff;
+  --purple-border: #d3adf7;
+  --gold: #d48806;
+  --gold-light: #fffbe6;
+  --gold-border: #ffe58f;
+  --text: #333;
+  --text-secondary: #666;
+  --text-muted: #999;
+  --border: #d9d9d9;
+  --border-light: #f0f0f0;
+  --bg: #f5f7fa;
+  --bg-card: #fff;
+  --bg-hover: #fafafa;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.6; }
+
+/* ========== Header ========== */
+.header { background: var(--bg-card); border-bottom: 1px solid var(--border-light); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-title { font-size: 18px; font-weight: 600; }
+.header-id { color: var(--text-muted); font-size: 13px; }
+.header-status { display: flex; align-items: center; gap: 6px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+.status-dot.off { background: var(--text-muted); }
+.header-actions { display: flex; gap: 8px; }
+
+/* ========== Tabs ========== */
+.tabs { background: var(--bg-card); border-bottom: 1px solid var(--border-light); padding: 0 32px; display: flex; gap: 0; }
+.tab-item { padding: 14px 24px; cursor: pointer; font-size: 14px; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all .2s; user-select: none; }
+.tab-item:hover { color: var(--primary); }
+.tab-item.active { color: var(--primary); font-weight: 500; border-bottom-color: var(--primary); }
+
+/* ========== Content ========== */
+.content { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+.tab-page { display: none; }
+.tab-page.active { display: block; }
+
+/* ========== Card ========== */
+.card { background: var(--bg-card); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.card-title { font-size: 16px; font-weight: 600; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; gap: 8px; }
+
+/* ========== Form ========== */
+.form-group { display: flex; align-items: flex-start; margin-bottom: 20px; }
+.form-label { width: 110px; text-align: right; padding: 7px 12px 7px 0; color: var(--text-secondary); flex-shrink: 0; font-size: 14px; }
+.form-label.required::before { content: "* "; color: var(--danger); }
+.form-control { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
+input[type="text"], input[type="number"], input[type="datetime-local"],
+select, textarea {
+  padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 14px; outline: none; transition: border .2s; font-family: inherit;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(24,144,255,.1); }
+.input-sm { width: 80px; }
+.input-md { width: 180px; }
+.input-lg { width: 280px; }
+.input-full { width: 100%; }
+textarea { resize: vertical; }
+
+/* Radio / Checkbox */
+.radio-group, .checkbox-group { display: flex; align-items: center; gap: 20px; padding: 7px 0; }
+.radio-item, .checkbox-item { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+.radio-item input, .checkbox-item input { accent-color: var(--primary); width: 16px; height: 16px; cursor: pointer; }
+
+/* ========== Buttons ========== */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 4px; padding: 7px 20px; border-radius: 6px;
+  font-size: 14px; cursor: pointer; border: 1px solid transparent; transition: all .15s; font-family: inherit; white-space: nowrap; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+.btn-primary:hover { background: #40a9ff; }
+.btn-success { background: var(--success); color: #fff; }
+.btn-success:hover { background: #73d13d; }
+.btn-danger { background: #fff; color: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: var(--danger-light); }
+.btn-default { background: #fff; color: var(--text-secondary); border-color: var(--border); }
+.btn-default:hover { border-color: var(--primary); color: var(--primary); }
+.btn-dashed { background: #fff; color: var(--text-muted); border: 1px dashed var(--border); }
+.btn-dashed:hover { border-color: var(--primary); color: var(--primary); }
+.btn-sm { padding: 4px 12px; font-size: 12px; }
+.btn-lg { padding: 10px 28px; font-size: 15px; }
+.btn-block { width: 100%; }
+.btn-icon { padding: 6px 10px; }
+
+.action-bar { display: flex; justify-content: center; gap: 16px; padding: 20px 0 4px; }
+
+/* ========== Reward Tags ========== */
+.reward-area { margin: 4px 0 8px; }
+.reward-area-label { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+.reward-list { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.reward-tag { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px;
+  border-radius: 6px; font-size: 13px; cursor: default; transition: all .15s; }
+.reward-tag .r-icon { font-size: 14px; }
+.reward-tag .r-name { font-weight: 500; }
+.reward-tag .r-qty { font-weight: 600; }
+.reward-tag .r-close { cursor: pointer; margin-left: 4px; font-size: 15px; opacity: .5; transition: opacity .15s; line-height: 1; }
+.reward-tag .r-close:hover { opacity: 1; color: var(--danger); }
+
+.reward-tag[data-color="green"] { background: var(--success-light); border: 1px solid var(--success-border); color: var(--success); }
+.reward-tag[data-color="green"] .r-qty { color: #389e0d; }
+.reward-tag[data-color="blue"] { background: #f0f5ff; border: 1px solid #adc6ff; color: #2f54eb; }
+.reward-tag[data-color="blue"] .r-qty { color: #1d39c4; }
+.reward-tag[data-color="purple"] { background: var(--purple-light); border: 1px solid var(--purple-border); color: var(--purple); }
+.reward-tag[data-color="purple"] .r-qty { color: #531dab; }
+.reward-tag[data-color="gold"] { background: var(--gold-light); border: 1px solid var(--gold-border); color: var(--gold); }
+.reward-tag[data-color="gold"] .r-qty { color: #ad6800; }
+
+/* ========== Task Card ========== */
+.task-card { border: 1px solid var(--border-light); border-radius: 10px; padding: 20px; margin-bottom: 16px; transition: box-shadow .2s; }
+.task-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
+.task-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.task-label { font-size: 15px; font-weight: 600; color: var(--primary); }
+.task-badge { background: var(--primary-light); color: var(--primary); padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+.task-desc { font-size: 12px; color: var(--text-muted); margin-left: 8px; }
+
+/* ========== Table ========== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+thead th { background: var(--bg-hover); padding: 12px 16px; text-align: left; font-size: 13px; color: var(--text-muted);
+  font-weight: 500; border-bottom: 1px solid var(--border-light); white-space: nowrap; }
+tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+tbody tr:hover { background: #fafbfc; }
+.link { color: var(--primary); cursor: pointer; text-decoration: none; }
+.link:hover { text-decoration: underline; }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 16px 0; font-size: 13px; color: var(--text-muted); }
+.page-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 4px; background: #fff; cursor: pointer; font-size: 13px; }
+.page-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.page-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+/* Search bar */
+.search-bar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+
+/* ========== Modal ========== */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 1000;
+  justify-content: center; align-items: center; }
+.modal-overlay.show { display: flex; }
+.modal { background: var(--bg-card); border-radius: var(--radius-lg); max-height: 85vh; overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0,0,0,.15); display: flex; flex-direction: column; }
+.modal-sm { width: 420px; }
+.modal-md { width: 560px; }
+.modal-lg { width: 800px; }
+.modal-xl { width: 960px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px;
+  border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-close { font-size: 18px; cursor: pointer; color: var(--text-muted); width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center; border-radius: 6px; background: none; border: none; }
+.modal-close:hover { background: var(--border-light); color: var(--text); }
+.modal-body { padding: 24px; overflow-y: auto; flex: 1; }
+.modal-footer { padding: 14px 24px; border-top: 1px solid var(--border-light); display: flex; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+
+/* ========== Reward Type Grid ========== */
+.reward-type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.reward-type-card { padding: 14px 8px; border: 2px solid var(--border-light); border-radius: var(--radius);
+  text-align: center; cursor: pointer; transition: all .2s; }
+.reward-type-card:hover { border-color: var(--primary-border); background: var(--primary-light); }
+.reward-type-card.selected { border-color: var(--primary); background: var(--primary-light); }
+.reward-type-card .rt-icon { font-size: 28px; margin-bottom: 4px; }
+.reward-type-card .rt-name { font-size: 12px; color: var(--text-secondary); }
+.reward-type-card.selected .rt-name { color: var(--primary); font-weight: 500; }
+
+.qty-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.qty-row label { color: var(--text-secondary); }
+.qty-group { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.qty-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-hover); border: none; cursor: pointer; font-size: 18px; color: var(--text-secondary); }
+.qty-btn:hover { background: var(--border-light); }
+.qty-val { width: 100px; height: 36px; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+  text-align: center; font-size: 14px; outline: none; }
+.preset-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.preset-pill { padding: 4px 14px; border: 1px solid var(--border); border-radius: 20px; font-size: 12px;
+  color: var(--text-secondary); cursor: pointer; transition: all .15s; background: #fff; }
+.preset-pill:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ========== Environment Selector ========== */
+.env-selector { display: flex; gap: 0; align-items: center; margin: 16px 0; }
+.env-card { flex: 1; padding: 20px 16px; border: 2px solid var(--border-light); border-radius: 10px;
+  cursor: pointer; text-align: center; transition: all .2s; position: relative; }
+.env-card:hover { border-color: var(--primary-border); }
+.env-card.selected { border-color: var(--primary); background: var(--primary-light); }
+.env-card .env-icon { font-size: 28px; margin-bottom: 6px; }
+.env-card .env-name { font-size: 14px; font-weight: 500; }
+.env-card .env-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+.env-card .env-check { position: absolute; top: 8px; right: 8px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--primary); color: #fff; display: none; align-items: center; justify-content: center; font-size: 11px; }
+.env-card.selected .env-check { display: flex; }
+.env-arrow { padding: 0 12px; color: var(--border); font-size: 22px; flex-shrink: 0; }
+
+/* ========== Compare Table ========== */
+.compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.compare-table th { padding: 10px 16px; background: var(--bg-hover); text-align: left; color: var(--text-muted);
+  font-weight: 500; border-bottom: 1px solid var(--border-light); }
+.compare-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); }
+.compare-table .fname { color: var(--text-secondary); font-weight: 500; }
+.old-val { color: var(--danger); text-decoration: line-through; }
+.new-val { color: var(--success); font-weight: 500; }
+
+/* ========== Timeline ========== */
+.timeline { position: relative; padding-left: 36px; }
+.timeline::before { content: ""; position: absolute; left: 13px; top: 8px; bottom: 8px; width: 2px; background: var(--border-light); }
+.tl-item { position: relative; padding-bottom: 24px; }
+.tl-item:last-child { padding-bottom: 0; }
+.tl-dot { position: absolute; left: -36px; top: 4px; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; z-index: 1; font-weight: 600; }
+.tl-dot.done { background: var(--success); color: #fff; }
+.tl-dot.current { background: var(--primary); color: #fff; box-shadow: 0 0 0 4px rgba(24,144,255,.15); }
+.tl-dot.pending { background: var(--border-light); color: #bbb; }
+.tl-title { font-size: 14px; font-weight: 500; }
+.tl-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.tl-detail { margin-top: 8px; padding: 12px 16px; background: var(--bg-hover); border-radius: var(--radius); font-size: 13px; color: var(--text-secondary); line-height: 1.8; }
+
+.status-tag { padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; }
+.status-tag.success { background: var(--success-light); color: var(--success); }
+.status-tag.warning { background: var(--warning-light); color: var(--warning); }
+.status-tag.info { background: var(--primary-light); color: var(--primary); }
+.status-tag.error { background: var(--danger-light); color: var(--danger); }
+
+/* ========== Approval Panel ========== */
+.approval-panel { border: 1px solid var(--warning-border); background: var(--warning-light); border-radius: 10px; padding: 20px; }
+.approval-title { font-size: 14px; font-weight: 600; color: #d48806; margin-bottom: 12px; }
+.approval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; font-size: 13px; color: #8c6d1f; }
+.approval-grid span { color: #d48806; font-weight: 500; }
+
+/* ========== Diff ========== */
+.diff-panel { border: 1px solid var(--border-light); border-radius: var(--radius); overflow: hidden; }
+.diff-header { padding: 10px 16px; background: var(--bg-hover); font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light); }
+.diff-row { display: flex; padding: 4px 16px; font-size: 13px; font-family: "SF Mono", "Fira Code", Consolas, monospace; }
+.diff-row.add { background: var(--success-light); color: #389e0d; }
+.diff-row.remove { background: var(--danger-light); color: #cf1322; }
+.diff-row.ctx { color: var(--text-muted); }
+.diff-ln { width: 36px; color: #ccc; flex-shrink: 0; user-select: none; }
+
+/* ========== Translation ========== */
+.trans-block { border: 1px solid var(--border-light); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.trans-task-title { font-size: 14px; font-weight: 500; margin-bottom: 12px; color: var(--text-secondary); }
+.trans-zh { padding: 8px 12px; background: var(--bg-hover); border-radius: 6px; margin-bottom: 12px; color: var(--text); font-size: 14px; }
+.trans-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.trans-lang { width: 60px; text-align: right; font-size: 13px; color: var(--text-muted); flex-shrink: 0; }
+
+/* ========== Visibility Section ========== */
+.id-textarea { width: 100%; height: 100px; margin-top: 8px; }
+.id-info { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.id-count { font-size: 13px; color: var(--text-muted); }
+
+/* ========== Limit Row ========== */
+.limit-row { display: flex; gap: 40px; flex-wrap: wrap; }
+.limit-item { display: flex; align-items: center; gap: 8px; }
+
+/* ========== Divider ========== */
+.divider { height: 1px; background: var(--border-light); margin: 20px 0; }
+
+/* ========== Toast ========== */
+.toast { position: fixed; top: 24px; left: 50%; transform: translateX(-50%); padding: 10px 24px; border-radius: 8px;
+  font-size: 14px; z-index: 2000; display: none; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.toast.show { display: block; animation: toastIn .3s ease; }
+.toast.success { background: var(--success); color: #fff; }
+.toast.info { background: var(--primary); color: #fff; }
+.toast.warning { background: var(--warning); color: #fff; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-12px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* ========== Rollback Table ========== */
+.rollback-table { width: 100%; border-collapse: collapse; }
+.rollback-table th { padding: 10px 16px; background: var(--bg-hover); text-align: left; font-size: 13px; color: var(--text-muted); font-weight: 500; }
+.rollback-table td { padding: 10px 16px; border-bottom: 1px solid var(--border-light); font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ========== Header ========== -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-title">邀请裂变</div>
+    <div class="header-id">活动ID: 25465 (系统生成)</div>
+    <div class="header-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText" style="font-size:13px; color:var(--success);">启用中</span>
+    </div>
+  </div>
+</div>
+
+<!-- ========== Tabs ========== -->
+<div class="tabs">
+  <div class="tab-item active" data-tab="basic">基础配置</div>
+  <div class="tab-item" data-tab="task">任务配置</div>
+  <div class="tab-item" data-tab="user">用户详情</div>
+  <div class="tab-item" data-tab="translate">翻译配置</div>
+</div>
+
+<div class="content">
+
+<!-- ==================== TAB 1: 基础配置 ==================== -->
+<div class="tab-page active" id="page-basic">
+  <div class="card">
+    <div class="card-title">基础配置</div>
+
+    <div class="form-group">
+      <div class="form-label required">后台名称</div>
+      <div class="form-control">
+        <input type="text" class="input-lg" value="邀请裂变" id="actName">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">活动ID</div>
+      <div class="form-control">
+        <span style="padding:7px 0;">25465</span>
+        <span style="color:var(--primary); font-size:13px;">(系统生成)</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label required">活动状态</div>
+      <div class="form-control">
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="actStatus" value="on" checked onchange="updateStatus()"> 启用</label>
+          <label class="radio-item"><input type="radio" name="actStatus" value="off" onchange="updateStatus()"> 关闭</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label required">活动时间</div>
+      <div class="form-control">
+        <input type="text" class="input-md" value="2026-01-01 00:00:00" id="timeStart">
+        <span>—</span>
+        <input type="text" class="input-md" value="2026-12-01 23:59:59" id="timeEnd">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label required">生效区域</div>
+      <div class="form-control">
+        <div class="checkbox-group">
+          <label class="checkbox-item"><input type="checkbox" name="region" value="BR"> BR</label>
+          <label class="checkbox-item"><input type="checkbox" name="region" value="VN"> VN</label>
+          <label class="checkbox-item"><input type="checkbox" name="region" value="ALL" checked> ALL</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label">活动首弹</div>
+      <div class="form-control">
+        <div class="radio-group">
+          <label class="radio-item"><input type="radio" name="firstPop" value="on" checked> 启用</label>
+          <label class="radio-item"><input type="radio" name="firstPop" value="off"> 关闭</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="form-label required">可见范围</div>
+      <div class="form-control" style="flex-direction:column; align-items:flex-start;">
+        <div class="radio-group" id="visRadios">
+          <label class="radio-item"><input type="radio" name="visibility" value="all" onchange="toggleIdArea()"> 全量用户</label>
+          <label class="radio-item"><input type="radio" name="visibility" value="white" onchange="toggleIdArea()"> 白名单用户ID</label>
+          <label class="radio-item"><input type="radio" name="visibility" value="black" checked onchange="toggleIdArea()"> 黑名单用户ID</label>
+        </div>
+        <div id="idArea" style="width:100%; margin-top:8px;">
+          <textarea class="id-textarea input-full" placeholder="每行一个用户ID 或 用英文逗号隔开" id="idTextarea"></textarea>
+          <div class="id-info">
+            <span class="id-count">当前: <strong id="idCount">0</strong> 个</span>
+            <button class="btn btn-sm btn-default" onclick="document.getElementById('fileInput').click()">批量导入</button>
+            <input type="file" id="fileInput" style="display:none" accept=".txt,.csv">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-lg btn-default" onclick="showToast('已保存','success')">保存</button>
+      <button class="btn btn-lg btn-primary" onclick="openPublishModal()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: 任务配置 ==================== -->
+<div class="tab-page" id="page-task">
+  <div class="card">
+    <div class="card-title">任务配置 — 通用奖励选择器</div>
+
+    <!-- Task 1 -->
+    <div class="task-card">
+      <div class="task-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="task-label">任务 1</span>
+          <span class="task-desc">每次邀请触发</span>
+        </div>
+        <span class="task-badge">基础任务</span>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <div class="form-label required">触发条件</div>
+        <div class="form-control">
+          <span>每成功邀请</span>
+          <input type="number" class="input-sm" value="1" min="1">
+          <span>个好友</span>
+          <select class="input-md"><option>注册</option><option>首充</option><option>登录</option></select>
+        </div>
+      </div>
+      <div style="margin-left:122px;">
+        <div class="reward-area">
+          <div class="reward-area-label">邀请者奖励</div>
+          <div class="reward-list" id="task1-inviter">
+            <div class="reward-tag" data-color="green"><span class="r-icon">💎</span><span class="r-name">钻石</span><span class="r-qty">x 1,000</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <button class="btn btn-dashed btn-sm" onclick="openRewardPicker('task1-inviter')">+ 添加奖励</button>
+          </div>
+        </div>
+        <div class="reward-area">
+          <div class="reward-area-label">好友奖励</div>
+          <div class="reward-list" id="task1-friend">
+            <div class="reward-tag" data-color="blue"><span class="r-icon">💎</span><span class="r-name">钻石</span><span class="r-qty">x 1,000</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <button class="btn btn-dashed btn-sm" onclick="openRewardPicker('task1-friend')">+ 添加奖励</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 2 -->
+    <div class="task-card">
+      <div class="task-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="task-label">任务 2</span>
+          <span class="task-desc">深度互动任务</span>
+        </div>
+        <span class="task-badge">进阶任务</span>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <div class="form-label required">触发条件</div>
+        <div class="form-control">
+          <span>好友在您创建的牌桌玩</span>
+          <input type="number" class="input-sm" value="10" min="1">
+          <span>手牌</span>
+        </div>
+      </div>
+      <div style="margin-left:122px;">
+        <div class="reward-area">
+          <div class="reward-area-label">邀请者奖励</div>
+          <div class="reward-list" id="task2-inviter">
+            <div class="reward-tag" data-color="green"><span class="r-icon">💎</span><span class="r-name">钻石</span><span class="r-qty">x 5,000</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <div class="reward-tag" data-color="purple"><span class="r-icon">👁️</span><span class="r-name">看手牌</span><span class="r-qty">x 5</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <button class="btn btn-dashed btn-sm" onclick="openRewardPicker('task2-inviter')">+ 添加奖励</button>
+          </div>
+        </div>
+        <div class="reward-area">
+          <div class="reward-area-label">好友奖励</div>
+          <div class="reward-list" id="task2-friend">
+            <button class="btn btn-dashed btn-sm" onclick="openRewardPicker('task2-friend')">+ 添加奖励</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Task 3 -->
+    <div class="task-card">
+      <div class="task-header">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="task-label">任务 3</span>
+          <span class="task-desc">累计里程碑</span>
+        </div>
+        <span class="task-badge">终极任务</span>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <div class="form-label required">触发条件</div>
+        <div class="form-control">
+          <span>累计邀请</span>
+          <select class="input-md"><option>注册人数</option><option>首充人数</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <div class="form-label">人数上限</div>
+        <div class="form-control">
+          <input type="number" class="input-sm" value="50" min="1">
+        </div>
+      </div>
+      <div style="margin-left:122px;">
+        <div class="reward-area">
+          <div class="reward-area-label">终极奖励</div>
+          <div class="reward-list" id="task3-reward">
+            <div class="reward-tag" data-color="green"><span class="r-icon">💎</span><span class="r-name">钻石</span><span class="r-qty">x 60,000</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <div class="reward-tag" data-color="purple"><span class="r-icon">👁️</span><span class="r-name">看手牌</span><span class="r-qty">x 5</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span></div>
+            <button class="btn btn-dashed btn-sm" onclick="openRewardPicker('task3-reward')">+ 添加奖励</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="limit-row">
+      <div class="limit-item">
+        <span class="form-label required" style="width:auto;">单日发放总限量</span>
+        <input type="number" class="input-md" placeholder="不填则不限制">
+      </div>
+      <div class="limit-item">
+        <span class="form-label required" style="width:auto;">单人发放总限量</span>
+        <input type="number" class="input-md" placeholder="不填则不限制">
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <button class="btn btn-lg btn-default">关闭</button>
+      <button class="btn btn-lg btn-primary" onclick="showToast('任务配置已保存','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: 用户详情 ==================== -->
+<div class="tab-page" id="page-user">
+  <div class="card">
+    <div class="card-title">用户详情</div>
+
+    <div class="search-bar">
+      <span style="color:var(--text-secondary);">查询时间:</span>
+      <input type="text" class="input-md" value="2026-01-01 00:00" id="queryStart">
+      <span>—</span>
+      <input type="text" class="input-md" value="2026-01-05 00:00" id="queryEnd">
+      <span style="color:var(--text-secondary); margin-left:16px;">查询ID:</span>
+      <input type="text" class="input-md" value="115024000" id="queryId">
+      <button class="btn btn-primary" onclick="searchUsers()">搜索</button>
+    </div>
+
+    <div style="margin-bottom:12px;">
+      <button class="btn btn-sm btn-default" onclick="showToast('CSV已导出','info')">导出CSV</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>序号</th><th>账号ID</th><th>玩家昵称</th><th>累计邀请人数</th><th>有效用户数</th><th>累计获奖金额</th><th>操作明细</th></tr>
+        </thead>
+        <tbody id="userTableBody"></tbody>
+      </table>
+    </div>
+    <div class="pagination" id="userPagination"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: 翻译配置 ==================== -->
+<div class="tab-page" id="page-translate">
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm btn-primary" onclick="addLanguage()">+ 新增语言</button>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-sm btn-default" onclick="showToast('翻译已导入','info')">导入</button>
+        <button class="btn btn-sm btn-default" onclick="showToast('翻译已导出','info')">导出</button>
+      </div>
+    </div>
+
+    <div id="transBlocks"></div>
+
+    <div class="action-bar">
+      <button class="btn btn-lg btn-default">关闭</button>
+      <button class="btn btn-lg btn-primary" onclick="showToast('翻译配置已保存','success')">保存</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+
+<!-- ==================== MODAL: 奖励选择器 ==================== -->
+<div class="modal-overlay" id="rewardPickerModal">
+  <div class="modal modal-md">
+    <div class="modal-header">
+      <h3>选择奖励道具</h3>
+      <button class="modal-close" onclick="closeModal('rewardPickerModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:13px; color:var(--text-muted); margin-bottom:10px;">选择道具类型</div>
+      <div class="reward-type-grid" id="rewardTypeGrid"></div>
+      <div class="qty-row">
+        <label>数量</label>
+        <div class="qty-group">
+          <button class="qty-btn" onclick="adjustQty(-100)">-</button>
+          <input class="qty-val" id="rewardQtyInput" type="number" value="1000" min="1">
+          <button class="qty-btn" onclick="adjustQty(100)">+</button>
+        </div>
+      </div>
+      <div class="preset-row" style="margin-top:8px;">
+        <span class="preset-pill" onclick="setRewardQty(100)">100</span>
+        <span class="preset-pill" onclick="setRewardQty(500)">500</span>
+        <span class="preset-pill" onclick="setRewardQty(1000)">1,000</span>
+        <span class="preset-pill" onclick="setRewardQty(5000)">5,000</span>
+        <span class="preset-pill" onclick="setRewardQty(10000)">10,000</span>
+        <span class="preset-pill" onclick="setRewardQty(50000)">50,000</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('rewardPickerModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmRewardPick()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: 发布环境 ==================== -->
+<div class="modal-overlay" id="publishModal">
+  <div class="modal modal-xl" style="max-height:90vh;">
+    <div class="modal-header">
+      <h3>发布活动</h3>
+      <button class="modal-close" onclick="closeModal('publishModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <!-- Env selector -->
+      <div style="font-size:14px; font-weight:600; margin-bottom:12px;">选择发布环境</div>
+      <div class="env-selector">
+        <div class="env-card selected" onclick="selectEnv(this, 'demo')">
+          <div class="env-check">✓</div>
+          <div class="env-icon">🧪</div>
+          <div class="env-name">Demo 测试服</div>
+          <div class="env-desc">内部功能验证</div>
+        </div>
+        <div class="env-arrow">→</div>
+        <div class="env-card" onclick="selectEnv(this, 'no4')">
+          <div class="env-check">✓</div>
+          <div class="env-icon">🔬</div>
+          <div class="env-name">No4 预发布</div>
+          <div class="env-desc">小流量验证</div>
+        </div>
+        <div class="env-arrow">→</div>
+        <div class="env-card" onclick="selectEnv(this, 'prod')">
+          <div class="env-check">✓</div>
+          <div class="env-icon">🌐</div>
+          <div class="env-name">外网正式服</div>
+          <div class="env-desc">全量用户可见</div>
+        </div>
+      </div>
+
+      <!-- Change diff -->
+      <div style="font-size:14px; font-weight:600; margin:20px 0 12px;">本次变更内容</div>
+      <table class="compare-table">
+        <thead><tr><th>配置项</th><th>变更前</th><th>变更后</th></tr></thead>
+        <tbody>
+          <tr><td class="fname">活动状态</td><td class="old-val">关闭</td><td class="new-val">启用</td></tr>
+          <tr><td class="fname">任务1 邀请者奖励</td><td class="old-val">钻石 x 500</td><td class="new-val">钻石 x 1,000</td></tr>
+          <tr><td class="fname">任务2 触发条件</td><td class="old-val">玩 5 手牌</td><td class="new-val">玩 10 手牌</td></tr>
+          <tr><td class="fname">可见范围</td><td class="old-val">白名单用户ID</td><td class="new-val">全量用户</td></tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:16px;">
+        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">发布备注</div>
+        <textarea class="input-full" style="height:60px;" placeholder="请填写本次发布的变更说明..." id="publishNote"></textarea>
+      </div>
+
+      <!-- Approval section -->
+      <div id="approvalSection" style="display:none; margin-top:20px;">
+        <div class="approval-panel">
+          <div class="approval-title">⏳ 发布审批 — <span id="approvalEnvName">Demo测试服</span></div>
+          <div class="approval-grid">
+            <div>提交人: <span>张三 (zhangsan)</span></div>
+            <div>提交时间: <span id="approvalTime"></span></div>
+            <div>目标环境: <span id="approvalEnv"></span></div>
+            <div>活动ID: <span>25465 (邀请裂变)</span></div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <div style="font-size:13px; color:#8c6d1f; margin-bottom:4px;">审批意见</div>
+            <textarea class="input-full" style="height:50px;" placeholder="请输入审批意见..."></textarea>
+          </div>
+          <div style="display:flex; gap:12px;">
+            <button class="btn btn-success" onclick="handleApprove('pass')">✓ 通过</button>
+            <button class="btn btn-danger" onclick="handleApprove('reject')">✗ 驳回</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div style="font-size:14px; font-weight:600; margin:24px 0 16px;">发布记录 & 变更历史</div>
+      <div class="timeline" id="publishTimeline">
+        <div class="tl-item">
+          <div class="tl-dot current">4</div>
+          <div>
+            <div class="tl-title">提交发布至 外网正式服</div>
+            <div class="tl-meta">张三 · 2026-04-09 15:30:22 · <span class="status-tag warning">待审批</span></div>
+            <div class="tl-detail">变更: 活动状态 关闭→启用，任务1奖励 500→1000，可见范围 白名单→全量<br>备注: 提高邀请奖励以提升裂变效果</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot done">3</div>
+          <div>
+            <div class="tl-title">发布至 No4预发布</div>
+            <div class="tl-meta">张三 · 2026-04-08 10:15:00 · <span class="status-tag success">已发布</span></div>
+            <div class="tl-detail">变更: 新增任务3（累计邀请50人），终极奖励钻石x60000<br>审批人: 李四 · 04-08 11:00 · 意见: 数值合理，同意发布</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot done">2</div>
+          <div>
+            <div class="tl-title">发布至 Demo测试服</div>
+            <div class="tl-meta">张三 · 2026-04-07 16:42:11 · <span class="status-tag success">已发布</span></div>
+            <div class="tl-detail">变更: 初始配置，任务1+任务2<br>备注: 测试服验证基础流程</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot done">1</div>
+          <div>
+            <div class="tl-title">创建活动</div>
+            <div class="tl-meta">张三 · 2026-04-07 14:20:00 · <span class="status-tag info">已创建</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Version diff -->
+      <div style="font-size:14px; font-weight:600; margin:24px 0 12px;">配置版本对比</div>
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap;">
+        <select class="input-md">
+          <option>v4 - 当前编辑 (未发布)</option>
+          <option>v3 - No4预发布 (04-08)</option>
+        </select>
+        <span style="color:var(--text-muted);">vs</span>
+        <select class="input-md">
+          <option>v3 - No4预发布 (04-08)</option>
+          <option>v2 - Demo测试服 (04-07)</option>
+          <option>v1 - 初始创建 (04-07)</option>
+        </select>
+        <button class="btn btn-sm btn-primary">对比</button>
+      </div>
+      <div class="diff-panel">
+        <div class="diff-header">配置差异 (v4 vs v3)</div>
+        <div class="diff-row ctx"><span class="diff-ln">1</span> 活动名称: 邀请裂变</div>
+        <div class="diff-row remove"><span class="diff-ln">2</span>- 活动状态: 关闭</div>
+        <div class="diff-row add"><span class="diff-ln">2</span>+ 活动状态: 启用</div>
+        <div class="diff-row ctx"><span class="diff-ln">3</span> 生效区域: ALL</div>
+        <div class="diff-row ctx"><span class="diff-ln">4</span> 任务1: 每成功邀请1个好友注册</div>
+        <div class="diff-row remove"><span class="diff-ln">5</span>- 邀请者奖励: 钻石 x 500</div>
+        <div class="diff-row add"><span class="diff-ln">5</span>+ 邀请者奖励: 钻石 x 1,000</div>
+        <div class="diff-row ctx"><span class="diff-ln">6</span> 好友奖励: 钻石 x 1,000</div>
+        <div class="diff-row remove"><span class="diff-ln">7</span>- 任务2: 好友在牌桌玩 5 手牌</div>
+        <div class="diff-row add"><span class="diff-ln">7</span>+ 任务2: 好友在牌桌玩 10 手牌</div>
+        <div class="diff-row remove"><span class="diff-ln">8</span>- 可见范围: 白名单用户ID</div>
+        <div class="diff-row add"><span class="diff-ln">8</span>+ 可见范围: 全量用户</div>
+      </div>
+
+      <!-- Rollback -->
+      <div style="font-size:14px; font-weight:600; margin:24px 0 12px;">快速回滚</div>
+      <table class="rollback-table">
+        <thead><tr><th>时间</th><th>环境</th><th>操作</th><th>回滚</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>04-08 11:00</td>
+            <td><span class="status-tag info">No4预发布</span></td>
+            <td>新增任务3 (张三)</td>
+            <td><button class="btn btn-sm btn-danger" onclick="showToast('已回滚到此版本','warning')">回滚</button></td>
+          </tr>
+          <tr>
+            <td>04-07 16:42</td>
+            <td><span class="status-tag success">Demo测试</span></td>
+            <td>初始配置 (张三)</td>
+            <td><button class="btn btn-sm btn-danger" onclick="showToast('已回滚到此版本','warning')">回滚</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('publishModal')">取消</button>
+      <button class="btn btn-primary" id="publishSubmitBtn" onclick="submitPublish()">提交审批</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: 用户详情 ==================== -->
+<div class="modal-overlay" id="userDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h3>邀请详情 — <span id="detailUserName"></span></h3>
+      <button class="modal-close" onclick="closeModal('userDetailModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>序号</th><th>被邀请ID</th><th>玩家昵称</th><th>注册时间</th><th>累计玩牌手数</th></tr></thead>
+          <tbody id="detailTableBody"></tbody>
+        </table>
+      </div>
+      <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+        <button class="btn btn-sm btn-default" onclick="showToast('CSV已导出','info')">导出CSV</button>
+      </div>
+      <div class="pagination" id="detailPagination"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== MODAL: 新增语言 ==================== -->
+<div class="modal-overlay" id="addLangModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h3>新增语言</h3>
+      <button class="modal-close" onclick="closeModal('addLangModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:12px;">
+        <div style="font-size:13px; color:var(--text-secondary); margin-bottom:6px;">语言名称</div>
+        <input type="text" class="input-full" placeholder="如: 韩语、泰语..." id="newLangName">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeModal('addLangModal')">取消</button>
+      <button class="btn btn-primary" onclick="confirmAddLang()">确认添加</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ==================== Data ====================
+const REWARD_TYPES = [
+  { id: 'diamond', icon: '💎', name: '钻石', color: 'green' },
+  { id: 'gold', icon: '🪙', name: '金币', color: 'gold' },
+  { id: 'peek', icon: '👁️', name: '看手牌', color: 'purple' },
+  { id: 'swap', icon: '🃏', name: '换牌卡', color: 'purple' },
+  { id: 'frame', icon: '🏆', name: '专属头像框', color: 'gold' },
+  { id: 'ticket', icon: '🎫', name: '锦标赛门票', color: 'blue' },
+  { id: 'chest', icon: '📦', name: '宝箱', color: 'gold' },
+  { id: 'gift', icon: '🎁', name: '礼包', color: 'blue' },
+];
+
+const MOCK_USERS = [
+  { id: 1, uid: '1254214', name: 'GKAHS', invited: 15, valid: 5, reward: 5000 },
+  { id: 2, uid: '1002938', name: 'GKAHS', invited: 15, valid: 5, reward: 5000 },
+  { id: 3, uid: '2384789', name: 'GKAHS', invited: 15, valid: 5, reward: 5000 },
+  { id: 4, uid: '1299992', name: 'GKAHS', invited: 15, valid: 5, reward: 5000 },
+  { id: 5, uid: '3847291', name: 'POKER7', invited: 22, valid: 8, reward: 8000 },
+  { id: 6, uid: '9281734', name: 'LUCKY3', invited: 10, valid: 3, reward: 3000 },
+  { id: 7, uid: '5738291', name: 'STARS', invited: 30, valid: 12, reward: 12000 },
+  { id: 8, uid: '1928374', name: 'KINGQ', invited: 18, valid: 7, reward: 7000 },
+  { id: 9, uid: '4829173', name: 'FLUSH', invited: 25, valid: 10, reward: 10000 },
+  { id: 10, uid: '7382910', name: 'BLUFF', invited: 8, valid: 2, reward: 2000 },
+  { id: 11, uid: '6192837', name: 'RIVER', invited: 45, valid: 18, reward: 18000 },
+  { id: 12, uid: '3847102', name: 'DEALT', invited: 12, valid: 4, reward: 4000 },
+];
+
+const MOCK_INVITEES = [
+  { id: 1, uid: '1254214', name: 'GKAHS', time: '2026-01-01 23:00:05', hands: 20 },
+  { id: 2, uid: '1220394', name: 'MYUS11', time: '2026-01-01 23:00:05', hands: 20 },
+  { id: 3, uid: '1232222', name: 'GGG0S', time: '2026-01-01 23:00:05', hands: 20 },
+  { id: 4, uid: '1267777', name: 'RWQAQ', time: '2026-01-01 23:00:05', hands: 20 },
+  { id: 5, uid: '1398271', name: 'ACES2', time: '2026-01-02 10:15:30', hands: 15 },
+  { id: 6, uid: '1472839', name: 'FLOP9', time: '2026-01-02 14:22:11', hands: 8 },
+];
+
+const TASKS_TRANS = [
+  { key: 'task1', zh: '每成功邀请1名好友注册' },
+  { key: 'task2', zh: '创建牌桌并与好友玩10手' },
+  { key: 'task3', zh: '累计邀请50人' },
+];
+
+let languages = ['英文', '日语', '越语', '葡语'];
+
+// ==================== Tab Switch ====================
+document.querySelectorAll('.tab-item').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ==================== Status ====================
+function updateStatus() {
+  const on = document.querySelector('input[name="actStatus"][value="on"]').checked;
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  dot.className = on ? 'status-dot' : 'status-dot off';
+  text.textContent = on ? '启用中' : '已关闭';
+  text.style.color = on ? 'var(--success)' : 'var(--text-muted)';
+}
+
+// ==================== Visibility ====================
+function toggleIdArea() {
+  const val = document.querySelector('input[name="visibility"]:checked').value;
+  document.getElementById('idArea').style.display = val === 'all' ? 'none' : 'block';
+}
+
+document.getElementById('idTextarea').addEventListener('input', function() {
+  const ids = this.value.split(/[\n,]/).filter(s => s.trim());
+  document.getElementById('idCount').textContent = ids.length;
+});
+
+// ==================== Reward Picker ====================
+let rewardPickerTarget = null;
+let selectedRewardType = 0;
+
+function renderRewardTypeGrid() {
+  const grid = document.getElementById('rewardTypeGrid');
+  grid.innerHTML = REWARD_TYPES.map((rt, i) =>
+    `<div class="reward-type-card${i === 0 ? ' selected' : ''}" onclick="selectRewardType(${i})">
+      <div class="rt-icon">${rt.icon}</div>
+      <div class="rt-name">${rt.name}</div>
+    </div>`
+  ).join('');
+}
+
+function selectRewardType(idx) {
+  selectedRewardType = idx;
+  document.querySelectorAll('#rewardTypeGrid .reward-type-card').forEach((c, i) => {
+    c.classList.toggle('selected', i === idx);
+  });
+}
+
+function openRewardPicker(targetId) {
+  rewardPickerTarget = targetId;
+  selectedRewardType = 0;
+  renderRewardTypeGrid();
+  document.getElementById('rewardQtyInput').value = 1000;
+  openModal('rewardPickerModal');
+}
+
+function adjustQty(delta) {
+  const input = document.getElementById('rewardQtyInput');
+  const val = Math.max(1, (parseInt(input.value) || 0) + delta);
+  input.value = val;
+}
+
+function setRewardQty(val) {
+  document.getElementById('rewardQtyInput').value = val;
+}
+
+function confirmRewardPick() {
+  const rt = REWARD_TYPES[selectedRewardType];
+  const qty = parseInt(document.getElementById('rewardQtyInput').value) || 1;
+  const formatted = qty.toLocaleString();
+  const list = document.getElementById(rewardPickerTarget);
+  if (!list) { closeModal('rewardPickerModal'); return; }
+
+  const addBtn = list.querySelector('.btn-dashed');
+  const tag = document.createElement('div');
+  tag.className = 'reward-tag';
+  tag.dataset.color = rt.color;
+  tag.innerHTML = `<span class="r-icon">${rt.icon}</span><span class="r-name">${rt.name}</span><span class="r-qty">x ${formatted}</span><span class="r-close" onclick="this.parentElement.remove()">&times;</span>`;
+  list.insertBefore(tag, addBtn);
+
+  closeModal('rewardPickerModal');
+  showToast(`已添加 ${rt.name} x ${formatted}`, 'success');
+}
+
+// ==================== User Table ====================
+const USER_PAGE_SIZE = 10;
+let userPage = 1;
+
+function renderUserTable() {
+  const start = (userPage - 1) * USER_PAGE_SIZE;
+  const pageData = MOCK_USERS.slice(start, start + USER_PAGE_SIZE);
+  const tbody = document.getElementById('userTableBody');
+  tbody.innerHTML = pageData.map((u, i) =>
+    `<tr>
+      <td>${start + i + 1}</td>
+      <td>${u.uid}</td>
+      <td>${u.name}</td>
+      <td>${u.invited}</td>
+      <td>${u.valid}</td>
+      <td>${u.reward.toLocaleString()}</td>
+      <td><a class="link" onclick="openUserDetail('${u.uid}', '${u.name}')">详情</a></td>
+    </tr>`
+  ).join('');
+
+  const totalPages = Math.ceil(MOCK_USERS.length / USER_PAGE_SIZE);
+  const pagination = document.getElementById('userPagination');
+  let html = `<button class="page-btn" onclick="goUserPage(${Math.max(1, userPage-1)})">&lt;</button>`;
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn${i === userPage ? ' active' : ''}" onclick="goUserPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goUserPage(${Math.min(totalPages, userPage+1)})">&gt;</button>`;
+  html += `<span style="margin-left:8px;">共 ${MOCK_USERS.length} 条</span>`;
+  html += `<select style="margin-left:8px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;"><option>10条/页</option><option>20条/页</option></select>`;
+  pagination.innerHTML = html;
+}
+
+function goUserPage(p) { userPage = p; renderUserTable(); }
+function searchUsers() { userPage = 1; renderUserTable(); showToast('查询完成', 'info'); }
+
+// ==================== User Detail ====================
+function openUserDetail(uid, name) {
+  document.getElementById('detailUserName').textContent = `${name} (${uid})`;
+  const tbody = document.getElementById('detailTableBody');
+  tbody.innerHTML = MOCK_INVITEES.map((inv, i) =>
+    `<tr><td>${i + 1}</td><td>${inv.uid}</td><td>${inv.name}</td><td>${inv.time}</td><td>${inv.hands}</td></tr>`
+  ).join('');
+  document.getElementById('detailPagination').innerHTML =
+    `<button class="page-btn active">1</button><span style="margin-left:8px;">共 ${MOCK_INVITEES.length} 条</span>
+     <select style="margin-left:8px;padding:4px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;"><option>10条/页</option></select>`;
+  openModal('userDetailModal');
+}
+
+// ==================== Translation ====================
+function renderTranslation() {
+  const container = document.getElementById('transBlocks');
+  container.innerHTML = TASKS_TRANS.map(task => {
+    const langRows = languages.map(lang =>
+      `<div class="trans-row">
+        <span class="trans-lang">${lang}:</span>
+        <input type="text" class="input-full" placeholder="输入${lang}翻译...">
+      </div>`
+    ).join('');
+    return `<div class="trans-block">
+      <div class="trans-task-title">${task.key.replace('task', '任务 ')}</div>
+      <div class="trans-zh">${task.zh}</div>
+      ${langRows}
+    </div>`;
+  }).join('');
+}
+
+function addLanguage() {
+  openModal('addLangModal');
+  document.getElementById('newLangName').value = '';
+}
+
+function confirmAddLang() {
+  const name = document.getElementById('newLangName').value.trim();
+  if (!name) { showToast('请输入语言名称', 'warning'); return; }
+  languages.push(name);
+  renderTranslation();
+  closeModal('addLangModal');
+  showToast(`已添加语言: ${name}`, 'success');
+}
+
+// ==================== Publish ====================
+let selectedEnvKey = 'demo';
+const ENV_NAMES = { demo: 'Demo测试服', no4: 'No4预发布', prod: '外网正式服' };
+
+function openPublishModal() {
+  document.getElementById('approvalSection').style.display = 'none';
+  document.getElementById('publishSubmitBtn').textContent = '提交审批';
+  document.getElementById('publishSubmitBtn').disabled = false;
+  openModal('publishModal');
+}
+
+function selectEnv(el, key) {
+  selectedEnvKey = key;
+  document.querySelectorAll('.env-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function submitPublish() {
+  const now = new Date();
+  const timeStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+  document.getElementById('approvalSection').style.display = 'block';
+  document.getElementById('approvalEnvName').textContent = ENV_NAMES[selectedEnvKey];
+  document.getElementById('approvalTime').textContent = timeStr;
+  document.getElementById('approvalEnv').textContent = ENV_NAMES[selectedEnvKey];
+
+  document.getElementById('publishSubmitBtn').textContent = '已提交';
+  document.getElementById('publishSubmitBtn').disabled = true;
+
+  document.getElementById('approvalSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  showToast('审批已提交，等待审批人处理', 'info');
+}
+
+function handleApprove(action) {
+  if (action === 'pass') {
+    showToast(`已审批通过，活动已发布至 ${ENV_NAMES[selectedEnvKey]}`, 'success');
+    document.getElementById('approvalSection').style.display = 'none';
+    setTimeout(() => closeModal('publishModal'), 800);
+  } else {
+    showToast('已驳回，请修改后重新提交', 'warning');
+    document.getElementById('approvalSection').style.display = 'none';
+    document.getElementById('publishSubmitBtn').textContent = '提交审批';
+    document.getElementById('publishSubmitBtn').disabled = false;
+  }
+}
+
+// ==================== Modal ====================
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// Close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+
+// ESC to close
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  }
+});
+
+// ==================== Toast ====================
+function showToast(msg, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  setTimeout(() => { toast.classList.remove('show'); }, 2200);
+}
+
+// ==================== Init ====================
+renderUserTable();
+renderTranslation();
+renderRewardTypeGrid();
+</script>
+</body>
+</html>
